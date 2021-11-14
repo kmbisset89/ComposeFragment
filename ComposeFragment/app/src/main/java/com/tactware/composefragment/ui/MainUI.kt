@@ -53,7 +53,11 @@ fun MainUI(
             mainUI()
         }
         AnimatedVisibility(
-            visible = flyoutState.value.also { if (!it) fragmentRemovalCallback() },
+            visible = flyoutState.value.also {
+                //If this section of the compose is not being drawn then we should
+                // remove the fragment
+                if (!it) fragmentRemovalCallback()
+            },
             modifier = Modifier
                 .fillMaxHeight(.8f)
                 .fillMaxWidth(.4f)
@@ -63,6 +67,7 @@ fun MainUI(
             AndroidView(modifier = Modifier.fillMaxSize(), factory = {
                 FrameLayout(it).apply {
                     id = flyoutId
+                    //lets us know when the view has been assigned
                     viewCreationCallback()
                 }
             })
