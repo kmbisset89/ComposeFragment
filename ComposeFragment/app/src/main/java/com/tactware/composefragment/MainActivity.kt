@@ -1,38 +1,54 @@
 package com.tactware.composefragment
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.view.View
 import androidx.activity.compose.setContent
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.commit
+import com.tactware.composefragment.ui.FlyoutFragment
+import com.tactware.composefragment.ui.MainUI
 import com.tactware.composefragment.ui.theme.ComposeFragmentTheme
 
-class MainActivity : ComponentActivity() {
+@ExperimentalAnimationApi
+class MainActivity : FragmentActivity() {
+    companion object {
+        private const val FLYOUT_FRAGMENT_TAG = "FLYOUT_FRAGMENT_TAG"
+    }
+
+    private val flyoutId by lazy { View.generateViewId() }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             ComposeFragmentTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
-                }
+                MainUI(
+                    mainUI = {
+
+                    },
+                    flyoutId = flyoutId,
+                    viewCreationCallback = {
+                        supportFragmentManager.commit {
+                            add(
+                                flyoutId,
+                                supportFragmentManager.fragmentFactory.instantiate(
+                                    classLoader,
+                                    FlyoutFragment::class.java.name
+                                ),
+                                FLYOUT_FRAGMENT_TAG
+                            )
+                        }
+                    },
+                    fragmentRemovalCallback = {
+                        supportFragmentManager.fragments.find { it.tag == FLYOUT_FRAGMENT_TAG }
+                            ?.let {
+                                supportFragmentManager.commit {
+                                    remove(it)
+                                }
+                            }
+                    }
+                )
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    ComposeFragmentTheme {
-        Greeting("Android")
-    }
-}
